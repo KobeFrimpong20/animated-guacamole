@@ -18,6 +18,7 @@ CREATE TABLE sessions (
 -- 3. SESSION REPORTS TABLE (The "Outcome", State Machine, and Contact Info)
 CREATE TYPE attendance_state AS ENUM ('present', 'no_show');
 CREATE TYPE delivery_state AS ENUM ('draft', 'pending', 'in_progress', 'queued', 'sent', 'failed');
+CREATE TYPE in_app_state AS ENUM ('hidden', 'visible', 'editable', 'locked');
 
 CREATE TABLE session_reports (
     id SERIAL PRIMARY KEY,
@@ -35,11 +36,13 @@ CREATE TABLE session_reports (
     engagement_q3 INT CHECK (engagement_q3 BETWEEN 1 AND 5),
     
     -- Narrative Content
-    raw_notes TEXT,
-    ai_polished_text TEXT,
+    session_summary TEXT NOT NULL,
+    what_went_well TEXT NOT NULL,
+    areas_for_growth TEXT NOT NULL,
+    next_session_plan TEXT NOT NULL,
     
     -- State Machine & Buffer Timing
-    in_app_status VARCHAR(50) DEFAULT 'hidden', 
+    in_app_status in_app_state DEFAULT 'hidden', 
     delivery_status delivery_state NOT NULL DEFAULT 'draft',
     send_at TIMESTAMP WITH TIME ZONE,
     
