@@ -1,10 +1,38 @@
 'use server';
 
 import { Resend } from 'resend';
+import { SessionReportEmail } from '../../emails/SessionReportEmail';
+import * as React from 'react';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-export async function sendEmail(email: string) {
+interface SendSessionReportOptions {
+  email: string;
+  studentName: string;
+  tutorName: string;
+  confidence: number;
+  focus: number;
+  mastery: number;
+  sessionSummary: string;
+  whatWentWell: string;
+  areasForGrowth: string;
+  nextSessionPlan: string;
+}
+
+export async function sendEmail(options: SendSessionReportOptions) {
+  const { 
+    email, 
+    studentName, 
+    tutorName, 
+    confidence, 
+    focus, 
+    mastery, 
+    sessionSummary, 
+    whatWentWell, 
+    areasForGrowth, 
+    nextSessionPlan 
+  } = options;
+
   if (!email) {
     return { error: 'Email is required' };
   }
@@ -13,8 +41,18 @@ export async function sendEmail(email: string) {
     const { data, error } = await resend.emails.send({
       from: 'Loop-Learn <onboarding@resend.dev>',
       to: [email],
-      subject: 'Hello from Loop-Learn!',
-      html: '<p>This is a test email from your new <strong>Loop-Learn</strong> app!</p>',
+      subject: `Session Report for ${studentName}`,
+      react: React.createElement(SessionReportEmail, {
+        studentName,
+        tutorName,
+        confidence,
+        focus,
+        mastery,
+        sessionSummary,
+        whatWentWell,
+        areasForGrowth,
+        nextSessionPlan,
+      }),
     });
 
     if (error) {
