@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import SessionReportForm from "./components/SessionReportForm";
+import SessionReportForm from "../components/SessionReportForm";
 
 export default function Home() {
   const [showForm, setShowForm] = useState(false);
@@ -10,7 +10,7 @@ export default function Home() {
     return (
       <div className="p-8 flex flex-col items-center">
         <div className="w-full max-w-4xl">
-          <button 
+          <button
             onClick={() => setShowForm(false)}
             className="mb-8 flex items-center gap-2 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
           >
