@@ -20,7 +20,7 @@ export default function Sidebar() {
           Dashboard
         </Link>
         <Link 
-          href="/import-schedules" 
+          href="/schedule/upload" 
           className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
