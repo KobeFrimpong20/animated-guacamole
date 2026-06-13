@@ -1,8 +1,32 @@
 'use client';
 
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
+import { createClient } from '@/lib/supabase/client';
 
 export default function Sidebar() {
+  const [username, setUsername] = useState('');
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return;
+      const name =
+        user.user_metadata?.name ||
+        user.user_metadata?.full_name ||
+        user.email?.split('@')[0] ||
+        '';
+      setUsername(name);
+    });
+  }, []);
+
+  const initials = username
+    .split(' ')
+    .map((w) => w[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+
   return (
     <aside className="w-64 bg-zinc-50 dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-800 flex flex-col h-screen sticky top-0">
       <div className="p-6">
@@ -33,10 +57,10 @@ export default function Sidebar() {
       <div className="p-4 border-t border-zinc-200 dark:border-zinc-800">
         <div className="flex items-center gap-3 px-3 py-2">
           <div className="w-8 h-8 rounded-full bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center text-xs font-bold">
-            KF
+            {initials}
           </div>
           <div className="flex-1 overflow-hidden">
-            <p className="text-sm font-medium truncate dark:text-zinc-200">Kobe Frimpong</p>
+            <p className="text-sm font-medium truncate dark:text-zinc-200">{username}</p>
           </div>
         </div>
       </div>
