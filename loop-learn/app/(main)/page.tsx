@@ -1,16 +1,31 @@
 'use client';
 
-import { useState } from 'react';
-import SessionReportForm from "./components/SessionReportForm";
+import { useState, useEffect } from 'react';
+import SessionReportForm from "../components/SessionReportForm";
+import { createClient } from '@/lib/supabase/client';
 
 export default function Home() {
   const [showForm, setShowForm] = useState(false);
+  const [username, setUsername] = useState('');
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return;
+      const name =
+        user.user_metadata?.name ||
+        user.user_metadata?.full_name ||
+        user.email?.split('@')[0] ||
+        '';
+      setUsername(name);
+    });
+  }, []);
 
   if (showForm) {
     return (
       <div className="p-8 flex flex-col items-center">
         <div className="w-full max-w-4xl">
-          <button 
+          <button
             onClick={() => setShowForm(false)}
             className="mb-8 flex items-center gap-2 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
           >
@@ -29,7 +44,7 @@ export default function Home() {
     <div className="p-8 h-full flex flex-col">
       <div className="flex flex-col items-start gap-4 mb-12">
         <h1 className="text-4xl font-bold tracking-tight text-black dark:text-zinc-50">
-          Welcome back, Kobe
+          Hello, {username}!
         </h1>
         <p className="text-lg text-zinc-600 dark:text-zinc-400">
           What would you like to do today?
