@@ -74,18 +74,7 @@ export async function POST(req: NextRequest) {
           .eq('email', row.tutor_email)
           .single();
           
-        console.log(`The tutor_email that was retrieved from the db was ${await supabase
-          .from('profiles')
-          .select('email')
-        }.`)
-        console.log(`The value od the email parsed was ${row.tutor_email}`)
         if (tutorError || !tutor) {
-          if (tutorError){
-            console.error("This is the tutorError: ", tutorError);
-          }
-          else {
-            console.log("There is no tutor: ", tutor);
-          }
           results.errors.push({ row: rowNum, error: `Tutor with email ${row.tutor_email} not found` });
           continue;
         }
@@ -140,6 +129,7 @@ export async function POST(req: NextRequest) {
             .single();
 
           if (sessionCreateError) {
+            console.log("This is the sessionCreateError output\n", sessionCreateError)
             results.errors.push({ row: rowNum, error: `Session creation failed: ${sessionCreateError.message}` });
             continue;
           }
