@@ -52,5 +52,22 @@ CREATE TABLE session_reports (
 
 -- Indexes for performance & dashboard queries
 CREATE INDEX idx_sessions_tutor ON sessions(tutor_name, scheduled_start);
-CREATE INDEX idx_reports_delivery ON session_reports(delivery_status, send_at) 
+CREATE INDEX idx_reports_delivery ON session_reports(delivery_status, send_at)
     WHERE delivery_status = 'pending';
+
+-- 4. TUTOR AVAILABILITY TABLE
+CREATE TABLE tutor_availability (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE,
+    date date NOT NULL,
+    is_busy boolean DEFAULT false,
+    available_hours integer[] DEFAULT '{}',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, date)
+);
+ALTER TABLE tutor_availability ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users manage own availability"
+    ON tutor_availability FOR ALL
+    USING (auth.uid() = user_id)
+    WITH CHECK (auth.uid() = user_id);
