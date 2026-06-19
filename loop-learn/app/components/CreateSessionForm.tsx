@@ -59,19 +59,19 @@ export default function CreateSessionForm({ onSuccess, onCancel }: Props) {
   };
 
   return (
-    <div className="w-full max-w-lg p-8 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-md">
-      <h2 className="text-2xl font-bold mb-6 text-zinc-900 dark:text-zinc-50">Create Session</h2>
+    <div className="w-full max-w-lg p-8 bg-white rounded-2xl border border-brand-border shadow-md">
+      <h2 className="text-2xl font-bold mb-6 text-brand-text">Create Session</h2>
 
       <form onSubmit={handleSubmit} className="space-y-5">
 
         {/* Tutor picker — shows all profiles with role = 'tutor' */}
         <div>
-          <label className="block text-sm font-medium mb-1">Tutor</label>
+          <label className="block text-sm font-medium mb-1 text-brand-text">Tutor</label>
           <select
             required
             value={tutorId}
             onChange={e => setTutorId(e.target.value)}
-            className="w-full p-2 rounded-lg border dark:bg-zinc-800 dark:border-zinc-700"
+            className="w-full p-2 rounded-lg border border-brand-border bg-white focus:outline-none focus:ring-2 focus:ring-brand-primary"
           >
             <option value="">Select a tutor…</option>
             {tutors.map(t => (
@@ -84,12 +84,12 @@ export default function CreateSessionForm({ onSuccess, onCancel }: Props) {
 
         {/* Student picker — shows all rows from the students table */}
         <div>
-          <label className="block text-sm font-medium mb-1">Student</label>
+          <label className="block text-sm font-medium mb-1 text-brand-text">Student</label>
           <select
             required
             value={studentId}
             onChange={e => setStudentId(e.target.value)}
-            className="w-full p-2 rounded-lg border dark:bg-zinc-800 dark:border-zinc-700"
+            className="w-full p-2 rounded-lg border border-brand-border bg-white focus:outline-none focus:ring-2 focus:ring-brand-primary"
           >
             <option value="">Select a student…</option>
             {students.map(s => (
@@ -103,29 +103,29 @@ export default function CreateSessionForm({ onSuccess, onCancel }: Props) {
         {/* Date and time — combined into a single ISO string on submit */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium mb-1">Date</label>
+            <label className="block text-sm font-medium mb-1 text-brand-text">Date</label>
             <input
               type="date"
               required
               value={date}
               onChange={e => setDate(e.target.value)}
-              className="w-full p-2 rounded-lg border dark:bg-zinc-800 dark:border-zinc-700"
+              className="w-full p-2 rounded-lg border border-brand-border bg-white focus:outline-none focus:ring-2 focus:ring-brand-primary"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Time</label>
+            <label className="block text-sm font-medium mb-1 text-brand-text">Time</label>
             <input
               type="time"
               required
               value={time}
               onChange={e => setTime(e.target.value)}
-              className="w-full p-2 rounded-lg border dark:bg-zinc-800 dark:border-zinc-700"
+              className="w-full p-2 rounded-lg border border-brand-border bg-white focus:outline-none focus:ring-2 focus:ring-brand-primary"
             />
           </div>
         </div>
 
         {errorMessage && (
-          <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-3 rounded-xl border border-red-100 dark:border-red-800/50">
+          <p className="text-sm text-rose-600 bg-rose-50 p-3 rounded-xl border border-rose-200">
             {errorMessage}
           </p>
         )}
@@ -135,14 +135,14 @@ export default function CreateSessionForm({ onSuccess, onCancel }: Props) {
             type="button"
             onClick={onCancel}
             disabled={status === 'loading'}
-            className="flex-1 py-2.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 font-bold rounded-xl hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-all disabled:opacity-50"
+            className="flex-1 py-2.5 bg-brand-card text-brand-text font-bold rounded-xl hover:bg-[#D8D1C7] transition-all disabled:opacity-50"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={status === 'loading'}
-            className="flex-[2] py-2.5 bg-black dark:bg-white text-white dark:text-black font-bold rounded-xl hover:opacity-90 transition-all disabled:opacity-50"
+            className="flex-[2] py-2.5 bg-brand-primary text-white font-bold rounded-xl hover:opacity-90 transition-all disabled:opacity-50"
           >
             {status === 'loading' ? 'Creating…' : 'Create Session'}
           </button>

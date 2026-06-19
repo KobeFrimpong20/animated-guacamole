@@ -47,7 +47,7 @@ export default function Home() {
   if (role === null) {
     return (
       <div className="p-8">
-        <p className="text-zinc-500 dark:text-zinc-400">
+        <p className="text-brand-muted">
           Your account does not have a role assigned yet. Please contact a director.
         </p>
       </div>
