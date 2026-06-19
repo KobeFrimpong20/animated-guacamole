@@ -4,8 +4,6 @@ import { Resend } from 'resend';
 import { SessionReportEmail } from '../../emails/SessionReportEmail';
 import * as React from 'react';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 interface SendSessionReportOptions {
   email: string;
   studentName: string;
@@ -38,6 +36,7 @@ export async function sendEmail(options: SendSessionReportOptions) {
   }
 
   try {
+    const resend = new Resend(process.env.RESEND_API_KEY);
     const { data, error } = await resend.emails.send({
       from: 'Loop-Learn <onboarding@resend.dev>',
       to: [email],

@@ -1,12 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { sendEmail } from '../actions/send-email';
 import { SessionReportView, SessionReportData } from './SessionReportView';
+import { getStudents, Student } from '../actions/students';
+import { saveSessionReport } from '../actions/sessions';
+import { createClient } from '@/lib/supabase/client';
 
 type Step = 'form' | 'preview' | 'success';
 
-export default function SessionReportForm() {
+interface Props {
+  // When provided, the form is linked to a scheduled session.
+  // Student and tutor fields are pre-filled and locked; report is saved to DB on submit.
+  sessionId?: number;
+  prefilledStudentName?: string;
+}
+
+export default function SessionReportForm({ sessionId, prefilledStudentName }: Props) {
   const [step, setStep] = useState<Step>('form');
   const [formData, setFormData] = useState<SessionReportData>({
     email: '',
@@ -21,8 +31,56 @@ export default function SessionReportForm() {
     nextSessionPlan: '',
   });
 
+  const [students, setStudents] = useState<Student[]>([]);
+  const [selectedStudentId, setSelectedStudentId] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('idle');
   const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    getStudents().then(data => {
+      setStudents(data);
+
+      // If the form was opened from a session row, find and lock the matching student
+      if (prefilledStudentName) {
+        const match = data.find(s => s.name === prefilledStudentName);
+        if (match) {
+          // Found a matching students record — use its ID and parent email
+          setSelectedStudentId(match.id);
+          setFormData(prev => ({
+            ...prev,
+            studentName: match.name,
+            email: match.parentEmail ?? '',
+          }));
+        } else {
+          // Name from session doesn't match any student record — display it but no student_id
+          setFormData(prev => ({ ...prev, studentName: prefilledStudentName }));
+        }
+      }
+    });
+
+    // Auto-populate the tutor name from the logged-in user's metadata
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return;
+      const name =
+        user.user_metadata?.name ||
+        user.user_metadata?.full_name ||
+        user.email?.split('@')[0] ||
+        '';
+      setFormData(prev => ({ ...prev, tutorName: name }));
+    });
+  }, [prefilledStudentName]);
+
+  const handleStudentChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const student = students.find(s => s.id === e.target.value);
+    if (!student) return;
+    setSelectedStudentId(student.id);
+    setFormData(prev => ({
+      ...prev,
+      studentName: student.name,
+      email: student.parentEmail ?? '',
+    }));
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -47,14 +105,35 @@ export default function SessionReportForm() {
     setMessage('');
 
     try {
+      // Step 1: send the email
       const result = await sendEmail(formData);
-      if (result?.success) {
-        setStep('success');
-        setStatus('idle');
-      } else {
+      if (!result?.success) {
         setStatus('error');
         setMessage(result?.error || 'Failed to send report.');
+        return;
       }
+
+      // Step 2: if linked to a session, save the report to the DB
+      if (sessionId) {
+        const saveResult = await saveSessionReport({
+          sessionId,
+          studentId: selectedStudentId || null,
+          confidence: formData.confidence,
+          focus: formData.focus,
+          mastery: formData.mastery,
+          sessionSummary: formData.sessionSummary,
+          whatWentWell: formData.whatWentWell,
+          areasForGrowth: formData.areasForGrowth,
+          nextSessionPlan: formData.nextSessionPlan,
+        });
+        // Email already sent — log the DB error but don't fail the success screen
+        if (saveResult.error) {
+          console.warn('Email sent but report DB save failed:', saveResult.error);
+        }
+      }
+
+      setStep('success');
+      setStatus('idle');
     } catch {
       setStatus('error');
       setMessage('An unexpected error occurred.');
@@ -76,8 +155,10 @@ export default function SessionReportForm() {
         <button
           onClick={() => {
             setStep('form');
+            setSelectedStudentId('');
             setFormData({
               ...formData,
+              email: '',
               studentName: '',
               sessionSummary: '',
               whatWentWell: '',
@@ -149,38 +230,51 @@ export default function SessionReportForm() {
       <form onSubmit={handleShowPreview} className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-4 md:col-span-2">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">Recipient Email</label>
-              <input
-                name="email"
-                type="email"
-                required
-                value={formData.email}
-                onChange={handleChange}
-                className="w-full p-2 rounded-lg border dark:bg-zinc-800 dark:border-zinc-700"
-                placeholder="parent@example.com"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Student Name</label>
-              <input
-                name="studentName"
-                required
-                value={formData.studentName}
-                onChange={handleChange}
-                className="w-full p-2 rounded-lg border dark:bg-zinc-800 dark:border-zinc-700"
-                placeholder="John Doe"
-              />
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium mb-1">Student</label>
+              {sessionId ? (
+                // Read-only when opened from a session — student was set by the director
+                <>
+                  <input
+                    value={formData.studentName}
+                    readOnly
+                    className="w-full p-2 rounded-lg border bg-zinc-50 dark:bg-zinc-800 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 cursor-not-allowed"
+                  />
+                  <p className="mt-1 text-xs text-zinc-400 dark:text-zinc-500">
+                    Report will be sent to: {formData.email || 'no parent email on file'}
+                  </p>
+                </>
+              ) : (
+                // Dropdown when opened from the standalone "Create a report" card
+                <>
+                  <select
+                    required
+                    value={selectedStudentId}
+                    onChange={handleStudentChange}
+                    className="w-full p-2 rounded-lg border dark:bg-zinc-800 dark:border-zinc-700"
+                  >
+                    <option value="">Select a student…</option>
+                    {students.map(s => (
+                      <option key={s.id} value={s.id}>{s.name}</option>
+                    ))}
+                  </select>
+                  {selectedStudentId && (
+                    <p className="mt-1 text-xs text-zinc-400 dark:text-zinc-500">
+                      Report will be sent to: {formData.email || 'no parent email on file'}
+                    </p>
+                  )}
+                </>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Tutor Name</label>
+              {/* Read-only — auto-populated from the logged-in user's profile */}
               <input
                 name="tutorName"
                 required
                 value={formData.tutorName}
-                onChange={handleChange}
-                className="w-full p-2 rounded-lg border dark:bg-zinc-800 dark:border-zinc-700"
-                placeholder="Jane Smith"
+                readOnly
+                className="w-full p-2 rounded-lg border bg-zinc-50 dark:bg-zinc-800 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 cursor-not-allowed"
               />
             </div>
           </div>

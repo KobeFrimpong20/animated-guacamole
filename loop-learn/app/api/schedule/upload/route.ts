@@ -136,14 +136,53 @@ export async function POST(req: NextRequest) {
           session_id = newSession.id;
         }
 
-        // 4. Create Session Report
+        // 4. Find or create student record
+        const { data: parentProfile } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('email', row.parent_email)
+          .maybeSingle();
+
+        const baseStudentQuery = supabase
+          .from('students')
+          .select('id')
+          .eq('name', row.student_name)
+          .eq('center_id', center_id);
+
+        const { data: existingStudent } = await (parentProfile?.id
+          ? baseStudentQuery.eq('parent_id', parentProfile.id)
+          : baseStudentQuery.is('parent_id', null)
+        ).maybeSingle();
+
+        let student_id: string;
+
+        if (existingStudent) {
+          student_id = existingStudent.id as string;
+        } else {
+          const { data: newStudent, error: studentCreateError } = await supabase
+            .from('students')
+            .insert({
+              name: row.student_name,
+              parent_id: parentProfile?.id ?? null,
+              center_id,
+            })
+            .select('id')
+            .single();
+
+          if (studentCreateError || !newStudent) {
+            results.errors.push({ row: rowNum, error: `Student creation failed: ${studentCreateError?.message}` });
+            continue;
+          }
+          student_id = newStudent.id as string;
+        }
+
+        // 5. Create Session Report
         const { error: reportError } = await supabase
           .from('session_reports')
           .insert({
             session_id,
             center_id,
-            student_name: row.student_name,
-            parent_email: row.parent_email,
+            student_id,
             session_summary: '',
             what_went_well: '',
             areas_for_growth: '',
