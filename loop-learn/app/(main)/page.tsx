@@ -1,77 +1,62 @@
 'use client';
 
+// Main dashboard page — detects the logged-in user's role and renders
+// the appropriate dashboard component. All roles land here after login.
+
 import { useState, useEffect } from 'react';
-import SessionReportForm from "../components/SessionReportForm";
 import { createClient } from '@/lib/supabase/client';
+import { getRoleFromUser, Role } from '@/lib/roles';
+import TutorDashboard from '../components/TutorDashboard';
+import FamilyDashboard from '../components/FamilyDashboard';
+import DirectorDashboard from '../components/DirectorDashboard';
+import AdminDashboard from '../components/AdminDashboard';
 
 export default function Home() {
-  const [showForm, setShowForm] = useState(false);
   const [username, setUsername] = useState('');
+  const [userId, setUserId] = useState('');
+
+  // undefined = still loading, null = loaded but no role set, Role = fully resolved
+  const [role, setRole] = useState<Role | null | undefined>(undefined);
 
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) return;
+
+      // Extract display name, falling back to the email prefix
       const name =
         user.user_metadata?.name ||
         user.user_metadata?.full_name ||
         user.email?.split('@')[0] ||
         '';
       setUsername(name);
+      setUserId(user.id);
+
+      // Resolve the role — null if unset or unrecognized
+      setRole(getRoleFromUser(user));
     });
   }, []);
 
-  if (showForm) {
+  // Don't render anything while the user data is still loading.
+  // This prevents a flash of the wrong dashboard.
+  if (role === undefined) {
+    return null;
+  }
+
+  // If the user has no role assigned, show a clear message instead of a broken UI.
+  if (role === null) {
     return (
-      <div className="p-8 flex flex-col items-center">
-        <div className="w-full max-w-4xl">
-          <button
-            onClick={() => setShowForm(false)}
-            className="mb-8 flex items-center gap-2 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-            Back to Dashboard
-          </button>
-          <SessionReportForm />
-        </div>
+      <div className="p-8">
+        <p className="text-zinc-500 dark:text-zinc-400">
+          Your account does not have a role assigned yet. Please contact a director.
+        </p>
       </div>
     );
   }
 
-  return (
-    <div className="p-8 h-full flex flex-col">
-      <div className="flex flex-col items-start gap-4 mb-12">
-        <h1 className="text-4xl font-bold tracking-tight text-black dark:text-zinc-50">
-          Hello, {username}!
-        </h1>
-        <p className="text-lg text-zinc-600 dark:text-zinc-400">
-          What would you like to do today?
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <button
-          onClick={() => setShowForm(true)}
-          className="group relative flex flex-col items-start p-8 bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm hover:shadow-md transition-all text-left"
-        >
-          <div className="w-12 h-12 bg-black dark:bg-white rounded-2xl flex items-center justify-center mb-6 text-white dark:text-black">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-            </svg>
-          </div>
-          <h3 className="text-xl font-bold mb-2">Create a report</h3>
-          <p className="text-zinc-500 dark:text-zinc-400">
-            Generate and send a new session report to parents.
-          </p>
-          <div className="absolute bottom-8 right-8 opacity-0 group-hover:opacity-100 transition-opacity">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-            </svg>
-          </div>
-        </button>
-      </div>
-    </div>
-  );
+  // Render the dashboard that matches the user's role
+  if (role === 'tutor')     return <TutorDashboard username={username} userId={userId} />;
+  if (role === 'family')    return <FamilyDashboard username={username} userId={userId} />;
+  if (role === 'director')  return <DirectorDashboard username={username} />;
+  if (role === 'admin')     return <AdminDashboard username={username} />;
 }
