@@ -14,6 +14,7 @@ import {
 
 interface Props {
   username: string;
+  orgId: string;
 }
 
 // Color-coded pill for a report's delivery status
@@ -41,7 +42,7 @@ function formatDate(iso: string): string {
     + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 }
 
-export default function DirectorDashboard({ username }: Props) {
+export default function DirectorDashboard({ username, orgId }: Props) {
   const [showForm, setShowForm] = useState(false);
   const [sessions, setSessions] = useState<DirectorSession[]>([]);
   const [reports, setReports] = useState<DirectorReport[]>([]);
@@ -54,12 +55,12 @@ export default function DirectorDashboard({ username }: Props) {
     setLoadingSessions(true);
     setLoadingReports(true);
 
-    getAllUpcomingSessions().then(data => {
+    getAllUpcomingSessions(orgId).then(data => {
       setSessions(data);
       setLoadingSessions(false);
     });
 
-    getAllRecentReports().then(data => {
+    getAllRecentReports(orgId).then(data => {
       setReports(data);
       setLoadingReports(false);
     });
@@ -86,6 +87,7 @@ export default function DirectorDashboard({ username }: Props) {
             Back to Dashboard
           </button>
           <CreateSessionForm
+            orgId={orgId}
             onSuccess={handleSessionCreated}
             onCancel={() => setShowForm(false)}
           />

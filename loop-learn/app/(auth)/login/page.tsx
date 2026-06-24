@@ -1,12 +1,15 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const inviteToken = searchParams.get('invite');
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('idle');
@@ -24,9 +27,11 @@ export default function LoginPage() {
       setStatus('error');
       setErrorMessage(error.message);
     } else {
-      router.push('/');
+      router.push(inviteToken ? `/invite/${inviteToken}` : '/organizations');
     }
   };
+
+  const signupHref = inviteToken ? `/signup?invite=${inviteToken}` : '/signup';
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 bg-brand-bg">
@@ -96,11 +101,19 @@ export default function LoginPage() {
 
         <p className="text-center mt-6 text-sm text-brand-muted">
           Don&apos;t have an account?{' '}
-          <Link href="/signup" className="font-medium text-brand-primary hover:underline">
+          <Link href={signupHref} className="font-medium text-brand-primary hover:underline">
             Sign up
           </Link>
         </p>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   );
 }

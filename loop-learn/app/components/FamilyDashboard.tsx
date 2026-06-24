@@ -15,8 +15,8 @@ import {
 
 interface Props {
   username: string;
-  // userId is the auth UUID — matches profiles.id, used to find linked students
   userId: string;
+  orgId: string;
 }
 
 // Formats an ISO date string into "Mon, Jun 16 · 2:00 PM"
@@ -27,7 +27,7 @@ function formatDate(iso: string): string {
     + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 }
 
-export default function FamilyDashboard({ username, userId }: Props) {
+export default function FamilyDashboard({ username, userId, orgId }: Props) {
   const [children, setChildren] = useState<MyStudent[]>([]);
   const [reports, setReports] = useState<StudentReport[]>([]);
   const [sessions, setSessions] = useState<StudentSession[]>([]);
@@ -39,7 +39,7 @@ export default function FamilyDashboard({ username, userId }: Props) {
     if (!userId) return;
 
     // Step 1: fetch this family's children
-    getMyChildren(userId).then(kids => {
+    getMyChildren(userId, orgId).then(kids => {
       setChildren(kids);
       setLoadingChildren(false);
 
@@ -59,7 +59,7 @@ export default function FamilyDashboard({ username, userId }: Props) {
         setLoadingReports(false);
       });
 
-      getMyStudentSessions(studentNames).then(data => {
+      getMyStudentSessions(studentNames, orgId).then(data => {
         setSessions(data);
         setLoadingSessions(false);
       });

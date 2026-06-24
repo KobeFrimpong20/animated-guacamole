@@ -9,12 +9,12 @@ import { getTutors, createSession, Tutor } from '../actions/sessions';
 import { getStudents, Student } from '../actions/students';
 
 interface Props {
-  // Called when the session is created successfully — lets the parent close the form
+  orgId: string;
   onSuccess: () => void;
   onCancel: () => void;
 }
 
-export default function CreateSessionForm({ onSuccess, onCancel }: Props) {
+export default function CreateSessionForm({ orgId, onSuccess, onCancel }: Props) {
   const [tutors, setTutors] = useState<Tutor[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
 
@@ -27,9 +27,8 @@ export default function CreateSessionForm({ onSuccess, onCancel }: Props) {
   const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
-    // Load tutors and students in parallel when the form mounts
-    getTutors().then(setTutors);
-    getStudents().then(setStudents);
+    getTutors(orgId).then(setTutors);
+    getStudents(orgId).then(setStudents);
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -48,7 +47,7 @@ export default function CreateSessionForm({ onSuccess, onCancel }: Props) {
     // Combine the separate date and time inputs into a single ISO datetime string
     const scheduledStart = new Date(`${date}T${time}`).toISOString();
 
-    const result = await createSession({ tutorId, studentName: student.name, scheduledStart });
+    const result = await createSession({ orgId, tutorId, studentName: student.name, scheduledStart });
 
     if (result.error) {
       setStatus('error');

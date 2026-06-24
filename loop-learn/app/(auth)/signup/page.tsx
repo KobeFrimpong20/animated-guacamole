@@ -1,10 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 
-export default function SignupPage() {
+function SignupForm() {
+  const searchParams = useSearchParams();
+  const inviteToken = searchParams.get('invite');
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -34,6 +38,8 @@ export default function SignupPage() {
     }
   };
 
+  const loginHref = inviteToken ? `/login?invite=${inviteToken}` : '/login';
+
   if (status === 'success') {
     return (
       <div className="min-h-screen flex items-center justify-center px-4 bg-brand-bg">
@@ -47,10 +53,10 @@ export default function SignupPage() {
           <p className="text-brand-muted mb-6">
             We sent a confirmation link to{' '}
             <span className="font-medium text-brand-text">{email}</span>.
-            Click it to activate your account.
+            Click it to activate your account, then sign in below.
           </p>
           <Link
-            href="/login"
+            href={loginHref}
             className="inline-block px-6 py-2.5 bg-brand-primary text-white font-bold rounded-xl hover:opacity-90 transition-all"
           >
             Back to sign in
@@ -142,11 +148,19 @@ export default function SignupPage() {
 
         <p className="text-center mt-6 text-sm text-brand-muted">
           Already have an account?{' '}
-          <Link href="/login" className="font-medium text-brand-primary hover:underline">
+          <Link href={loginHref} className="font-medium text-brand-primary hover:underline">
             Sign in
           </Link>
         </p>
       </div>
     </div>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense>
+      <SignupForm />
+    </Suspense>
   );
 }

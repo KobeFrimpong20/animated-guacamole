@@ -12,8 +12,8 @@ import { getUpcomingSessions, getPastReports, UpcomingSession, PastReport } from
 
 interface Props {
   username: string;
-  // userId is the auth UUID — used to query sessions/reports from the DB
   userId: string;
+  orgId: string;
 }
 
 // Maps a delivery_status value to a color-coded pill label
@@ -42,7 +42,7 @@ function formatSessionDate(iso: string): string {
     + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 }
 
-export default function TutorDashboard({ username, userId }: Props) {
+export default function TutorDashboard({ username, userId, orgId }: Props) {
   // null = dashboard shown
   // 'standalone' = freeform report form (not linked to a session)
   // UpcomingSession = report form pre-linked to that session
@@ -61,12 +61,12 @@ export default function TutorDashboard({ username, userId }: Props) {
     setLoadingSessions(true);
     setLoadingReports(true);
 
-    getUpcomingSessions(userId).then(data => {
+    getUpcomingSessions(userId, orgId).then(data => {
       setUpcomingSessions(data);
       setLoadingSessions(false);
     });
 
-    getPastReports(userId).then(data => {
+    getPastReports(userId, orgId).then(data => {
       setPastReports(data);
       setLoadingReports(false);
     });
@@ -94,7 +94,7 @@ export default function TutorDashboard({ username, userId }: Props) {
             Back to Dashboard
           </button>
           <SessionReportForm
-            // Only pass session props when opened from a session row
+            orgId={orgId}
             sessionId={isSessionLinked ? formContext.id : undefined}
             prefilledStudentName={isSessionLinked ? (formContext.studentName ?? undefined) : undefined}
           />

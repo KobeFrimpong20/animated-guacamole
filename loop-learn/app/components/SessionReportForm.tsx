@@ -10,13 +10,12 @@ import { createClient } from '@/lib/supabase/client';
 type Step = 'form' | 'preview' | 'success';
 
 interface Props {
-  // When provided, the form is linked to a scheduled session.
-  // Student and tutor fields are pre-filled and locked; report is saved to DB on submit.
+  orgId: string;
   sessionId?: number;
   prefilledStudentName?: string;
 }
 
-export default function SessionReportForm({ sessionId, prefilledStudentName }: Props) {
+export default function SessionReportForm({ orgId, sessionId, prefilledStudentName }: Props) {
   const [step, setStep] = useState<Step>('form');
   const [formData, setFormData] = useState<SessionReportData>({
     email: '',
@@ -37,7 +36,7 @@ export default function SessionReportForm({ sessionId, prefilledStudentName }: P
   const [message, setMessage] = useState('');
 
   useEffect(() => {
-    getStudents().then(data => {
+    getStudents(orgId).then(data => {
       setStudents(data);
 
       // If the form was opened from a session row, find and lock the matching student
@@ -117,6 +116,7 @@ export default function SessionReportForm({ sessionId, prefilledStudentName }: P
       if (sessionId) {
         const saveResult = await saveSessionReport({
           sessionId,
+          orgId,
           studentId: selectedStudentId || null,
           confidence: formData.confidence,
           focus: formData.focus,

@@ -6,9 +6,6 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { getRoleFromUser, Role } from '@/lib/roles';
 
-// Nav items shown beneath Dashboard for each role.
-// Each item has the route href, display label, and two SVG path strings for the icon.
-// Using two paths (d1/d2) covers icons that need a compound shape.
 const NAV_BY_ROLE: Record<Role, { href: string; label: string; d1: string; d2?: string }[]> = {
   tutor: [
     {
@@ -17,7 +14,6 @@ const NAV_BY_ROLE: Record<Role, { href: string; label: string; d1: string; d2?: 
       d1: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z',
     },
   ],
-  // 'family' is the DB enum value for the parent/guardian role
   family: [
     {
       href: '/calendar',
@@ -39,44 +35,34 @@ const NAV_BY_ROLE: Record<Role, { href: string; label: string; d1: string; d2?: 
     {
       href: '/users',
       label: 'Manage Users',
-      // Two paths needed for the "group of people" icon shape
       d1: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197',
       d2: 'M13 7a4 4 0 11-8 0 4 4 0 018 0z',
     },
   ],
-  // 'admin' is a placeholder role — nav items will be defined later
   admin: [],
 };
 
-export default function Sidebar() {
+export default function Sidebar({ orgId, orgName }: { orgId: string; orgName: string }) {
   const router = useRouter();
   const [username, setUsername] = useState('');
-  // role is null while loading or if the user has no role set in metadata
   const [role, setRole] = useState<Role | null>(null);
-  // Controls visibility of the logout dropdown above the avatar
   const [showMenu, setShowMenu] = useState(false);
-  // Ref used to detect clicks outside the avatar/menu so we can close it
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) return;
-
-      // Extract display name from metadata fields, falling back to email prefix
       const name =
         user.user_metadata?.name ||
         user.user_metadata?.full_name ||
         user.email?.split('@')[0] ||
         '';
       setUsername(name);
-
-      // Read the role from user_metadata using our shared helper
       setRole(getRoleFromUser(user));
     });
   }, []);
 
-  // Close the menu when the user clicks anywhere outside the avatar/menu container
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
@@ -90,7 +76,6 @@ export default function Sidebar() {
   const handleLogout = async () => {
     const supabase = createClient();
     await supabase.auth.signOut();
-    // Redirect to login after signing out
     router.push('/login');
   };
 
@@ -101,19 +86,29 @@ export default function Sidebar() {
     .slice(0, 2)
     .toUpperCase();
 
-  // Look up the nav items for the current role (empty array if role is null/loading)
-  const roleNavItems = role ? NAV_BY_ROLE[role] : [];
+  const base = `/org/${orgId}`;
+  const roleNavItems = role
+    ? NAV_BY_ROLE[role].map(item => ({ ...item, href: `${base}${item.href}` }))
+    : [];
 
   return (
     <aside className="w-64 bg-brand-card border-r border-brand-border flex flex-col h-screen sticky top-0">
-      <div className="p-6">
+      <div className="p-6 border-b border-brand-border">
+        <Link href="/organizations" className="flex items-center gap-1.5 text-xs text-brand-muted hover:text-brand-text transition-colors mb-3">
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+          </svg>
+          All organizations
+        </Link>
         <h1 className="text-xl font-bold tracking-tight text-brand-primary">Loop-Learn</h1>
+        {orgName && (
+          <p className="mt-1 text-sm text-brand-muted truncate" title={orgName}>{orgName}</p>
+        )}
       </div>
 
-      <nav className="flex-1 px-4 space-y-1">
-        {/* Dashboard is shown to every role */}
+      <nav className="flex-1 px-4 space-y-1 pt-4">
         <Link
-          href="/"
+          href={base}
           className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-brand-text hover:bg-[#D8D1C7] transition-colors"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -122,7 +117,6 @@ export default function Sidebar() {
           Dashboard
         </Link>
 
-        {/* Role-specific nav items — populated from NAV_BY_ROLE above */}
         {roleNavItems.map((item) => (
           <Link
             key={item.href}
@@ -131,7 +125,6 @@ export default function Sidebar() {
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={item.d1} />
-              {/* Render the second path only for compound icons */}
               {item.d2 && <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={item.d2} />}
             </svg>
             {item.label}
@@ -141,8 +134,6 @@ export default function Sidebar() {
 
       <div className="p-4 border-t border-brand-border">
         <div className="flex items-center gap-3 px-3 py-2">
-
-          {/* Avatar — click to open/close the logout menu */}
           <div ref={menuRef} className="relative">
             <button
               onClick={() => setShowMenu(prev => !prev)}
@@ -151,7 +142,6 @@ export default function Sidebar() {
               {initials}
             </button>
 
-            {/* Logout menu — floats above the avatar when open */}
             {showMenu && (
               <div className="absolute bottom-10 left-0 bg-white border border-brand-border rounded-xl shadow-lg overflow-hidden w-36">
                 <button

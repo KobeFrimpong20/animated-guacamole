@@ -1,8 +1,5 @@
 'use server';
 
-// Server actions for fetching family-specific data.
-// A family account can have one or more students linked via students.parent_id.
-
 import { createClient } from '@/lib/supabase/server';
 
 export type MyStudent = {
@@ -26,14 +23,14 @@ export type StudentSession = {
   scheduledStart: string;
 };
 
-// Returns all students linked to this family account.
-export async function getMyChildren(parentProfileId: string): Promise<MyStudent[]> {
+export async function getMyChildren(parentProfileId: string, orgId: string): Promise<MyStudent[]> {
   const supabase = await createClient();
 
   const { data, error } = await supabase
     .from('students')
     .select('id, name, grade_level')
     .eq('parent_id', parentProfileId)
+    .eq('center_id', orgId)
     .order('name', { ascending: true });
 
   if (error) {
@@ -48,7 +45,6 @@ export async function getMyChildren(parentProfileId: string): Promise<MyStudent[
   }));
 }
 
-// Returns the most recent session reports for the given student IDs.
 export async function getMyStudentReports(studentIds: string[]): Promise<StudentReport[]> {
   if (!studentIds.length) return [];
 
@@ -68,17 +64,15 @@ export async function getMyStudentReports(studentIds: string[]): Promise<Student
 
   return (data ?? []).map(row => ({
     id: row.id as number,
-    studentName: (row.students as { name: string } | null)?.name ?? 'Unknown',
+    studentName: (Array.isArray(row.students) ? row.students[0] : row.students as { name: string } | null)?.name ?? 'Unknown',
     sessionSummary: row.session_summary as string,
     deliveryStatus: row.delivery_status as string,
     createdAt: row.created_at as string,
-    sessionDate: (row.sessions as { scheduled_start: string } | null)?.scheduled_start ?? null,
+    sessionDate: (Array.isArray(row.sessions) ? row.sessions[0] : row.sessions as { scheduled_start: string } | null)?.scheduled_start ?? null,
   }));
 }
 
-// Returns upcoming sessions for the given student names.
-// Sessions are matched by student_name since the sessions table does not store a student_id FK.
-export async function getMyStudentSessions(studentNames: string[]): Promise<StudentSession[]> {
+export async function getMyStudentSessions(studentNames: string[], orgId: string): Promise<StudentSession[]> {
   if (!studentNames.length) return [];
 
   const supabase = await createClient();
@@ -88,6 +82,7 @@ export async function getMyStudentSessions(studentNames: string[]): Promise<Stud
     .from('sessions')
     .select('id, scheduled_start, student_name')
     .in('student_name', studentNames)
+    .eq('center_id', orgId)
     .gte('scheduled_start', now)
     .order('scheduled_start', { ascending: true })
     .limit(5);

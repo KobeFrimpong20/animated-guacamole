@@ -9,12 +9,13 @@ export type Student = {
   gradeLevel: string | null;
 };
 
-export async function getStudents(): Promise<Student[]> {
+export async function getStudents(orgId: string): Promise<Student[]> {
   const supabase = await createClient();
 
   const { data, error } = await supabase
     .from('students')
     .select('id, name, grade_level')
+    .eq('center_id', orgId)
     .order('name', { ascending: true });
 
   if (error) {
@@ -25,7 +26,6 @@ export async function getStudents(): Promise<Student[]> {
   return (data ?? []).map((row: Record<string, unknown>) => ({
     id: row.id as string,
     name: row.name as string,
-    // parentEmail will be populated once students are linked to family accounts via parent_id
     parentEmail: null,
     gradeLevel: row.grade_level as string | null,
   }));
