@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useParams } from 'next/navigation';
 import { Upload, AlertCircle, CheckCircle2, X } from 'lucide-react';
 
 interface UploadResult {
@@ -10,6 +11,7 @@ interface UploadResult {
 }
 
 export default function ImportSchedulesPage() {
+  const { orgId } = useParams<{ orgId: string }>();
   const [file, setFile] = useState<File | null>(null);
   const [status, setStatus] = useState<'idle' | 'uploading' | 'complete' | 'error'>('idle');
   const [result, setResult] = useState<UploadResult | null>(null);
@@ -29,6 +31,7 @@ export default function ImportSchedulesPage() {
 
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('orgId', orgId);
 
     try {
       const response = await fetch('/api/schedule/upload', {

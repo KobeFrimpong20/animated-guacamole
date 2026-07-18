@@ -174,21 +174,21 @@ export default function AvailabilityCalendar({ initialData, initialYear, initial
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">Your availability</h1>
-          <p className="text-sm text-zinc-500 mt-1">Tap a day to set or clear your hours</p>
+          <h1 className="text-2xl font-bold text-brand-text">Your availability</h1>
+          <p className="text-sm text-brand-muted mt-1">Tap a day to set or clear your hours</p>
         </div>
         <div className="flex items-center gap-3">
           <button
             onClick={handleCopyFromLastWeek}
             disabled={!selectedDate || isPending}
-            className="px-4 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-600 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="px-4 py-2 text-sm font-medium text-brand-muted border border-brand-border rounded-lg hover:bg-brand-card disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             Copy from last week
           </button>
           <button
             onClick={handleSave}
             disabled={dirty.size === 0 || isPending}
-            className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="px-4 py-2 text-sm font-medium text-white bg-brand-primary rounded-lg hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             {isPending ? 'Saving…' : 'Save'}
           </button>
@@ -197,41 +197,41 @@ export default function AvailabilityCalendar({ initialData, initialYear, initial
 
       <div className="flex gap-4">
         {/* Calendar */}
-        <div className="flex-1 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl overflow-hidden">
+        <div className="flex-1 bg-white border border-brand-border rounded-xl overflow-hidden">
           {/* Navigation */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100 dark:border-zinc-800">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-brand-border">
             <div className="flex items-center gap-3">
               <button
                 onClick={() => viewMode === 'week' ? navigateWeek(-1) : navigateMonth(-1)}
                 disabled={isPending}
-                className="p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors disabled:opacity-40"
+                className="p-1 rounded hover:bg-brand-card transition-colors disabled:opacity-40"
                 aria-label={viewMode === 'week' ? 'Previous week' : 'Previous month'}
               >
-                <svg className="w-5 h-5 text-zinc-600 dark:text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-brand-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
-              <span className="font-semibold text-zinc-900 dark:text-white min-w-48 text-center">
+              <span className="font-semibold text-brand-text min-w-48 text-center">
                 {headerLabel}
               </span>
               <button
                 onClick={() => viewMode === 'week' ? navigateWeek(1) : navigateMonth(1)}
                 disabled={isPending}
-                className="p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors disabled:opacity-40"
+                className="p-1 rounded hover:bg-brand-card transition-colors disabled:opacity-40"
                 aria-label={viewMode === 'week' ? 'Next week' : 'Next month'}
               >
-                <svg className="w-5 h-5 text-zinc-600 dark:text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-brand-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
               </button>
             </div>
-            <div className="flex rounded-lg border border-zinc-200 dark:border-zinc-700 overflow-hidden text-sm">
+            <div className="flex rounded-lg border border-brand-border overflow-hidden text-sm">
               <button
                 onClick={() => setViewMode('month')}
                 className={`px-3 py-1 font-medium transition-colors ${
                   viewMode === 'month'
-                    ? 'bg-blue-500 text-white'
-                    : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800'
+                    ? 'bg-brand-primary text-white'
+                    : 'text-brand-muted hover:bg-brand-card'
                 }`}
               >
                 Month
@@ -240,8 +240,8 @@ export default function AvailabilityCalendar({ initialData, initialYear, initial
                 onClick={() => setViewMode('week')}
                 className={`px-3 py-1 font-medium transition-colors ${
                   viewMode === 'week'
-                    ? 'bg-blue-500 text-white'
-                    : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800'
+                    ? 'bg-brand-primary text-white'
+                    : 'text-brand-muted hover:bg-brand-card'
                 }`}
               >
                 Week
@@ -250,9 +250,9 @@ export default function AvailabilityCalendar({ initialData, initialYear, initial
           </div>
 
           {/* Day name headers */}
-          <div className="grid grid-cols-7 border-b border-zinc-100 dark:border-zinc-800">
+          <div className="grid grid-cols-7 border-b border-brand-border">
             {DAY_NAMES.map(name => (
-              <div key={name} className="py-2 text-center text-xs font-semibold text-zinc-400 uppercase tracking-wide">
+              <div key={name} className="py-2 text-center text-xs font-semibold text-brand-muted uppercase tracking-wide">
                 {name}
               </div>
             ))}
@@ -260,13 +260,13 @@ export default function AvailabilityCalendar({ initialData, initialYear, initial
 
           {/* Calendar rows */}
           {displayRows.map((week, wi) => (
-            <div key={wi} className="grid grid-cols-7 border-b border-zinc-100 dark:border-zinc-800 last:border-b-0">
+            <div key={wi} className="grid grid-cols-7 border-b border-brand-border last:border-b-0">
               {week.map((date, di) => {
                 if (!date) {
                   return (
                     <div
                       key={di}
-                      className={`h-20 border-r border-zinc-100 dark:border-zinc-800 last:border-r-0 ${
+                      className={`h-20 border-r border-brand-border last:border-r-0 ${
                         viewMode === 'week' ? 'h-28' : 'h-20'
                       }`}
                     />
@@ -281,14 +281,14 @@ export default function AvailabilityCalendar({ initialData, initialYear, initial
                 const dayNum = parseInt(date.split('-')[2], 10);
 
                 let cellBg = '';
-                let numColor = 'text-zinc-700 dark:text-zinc-300';
+                let numColor = 'text-brand-text';
                 if (isSelected) {
-                  cellBg = 'bg-blue-500';
+                  cellBg = 'bg-brand-primary';
                   numColor = 'text-white';
                 } else if (isBusy) {
-                  cellBg = 'bg-red-50 dark:bg-red-950/40';
+                  cellBg = 'bg-rose-50';
                 } else if (hours.length > 0) {
-                  cellBg = 'bg-blue-50 dark:bg-blue-950/40';
+                  cellBg = 'bg-brand-card';
                 }
 
                 return (
@@ -298,16 +298,16 @@ export default function AvailabilityCalendar({ initialData, initialYear, initial
                       setSelectedDate(date);
                       if (viewMode === 'week') setWeekAnchorDate(date);
                     }}
-                    className={`${viewMode === 'week' ? 'h-28' : 'h-20'} p-2 border-r border-zinc-100 dark:border-zinc-800 last:border-r-0 text-left relative hover:brightness-95 transition-all ${cellBg}`}
+                    className={`${viewMode === 'week' ? 'h-28' : 'h-20'} p-2 border-r border-brand-border last:border-r-0 text-left relative hover:brightness-95 transition-all ${cellBg}`}
                   >
                     <span className={`text-sm font-medium ${numColor} ${isToday && !isSelected ? 'font-bold underline' : ''}`}>
                       {dayNum}
                     </span>
                     {isBusy && (
-                      <span className="absolute bottom-2 left-2 text-xs font-medium text-red-500">Busy</span>
+                      <span className="absolute bottom-2 left-2 text-xs font-medium text-rose-500">Busy</span>
                     )}
                     {!isBusy && hours.length > 0 && (
-                      <span className={`absolute bottom-2 left-2 text-xs font-semibold ${isSelected ? 'text-blue-100' : 'text-blue-500'}`}>
+                      <span className={`absolute bottom-2 left-2 text-xs font-semibold ${isSelected ? 'text-white' : 'text-brand-primary'}`}>
                         {hours.length}h
                       </span>
                     )}
@@ -321,18 +321,18 @@ export default function AvailabilityCalendar({ initialData, initialYear, initial
         {/* Right panel */}
         <div className="w-72 flex-shrink-0 flex flex-col gap-4">
           {/* Stats */}
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl p-4 flex gap-2">
+          <div className="bg-white border border-brand-border rounded-xl p-4 flex gap-2">
             <div className="flex-1 text-center">
-              <p className="text-3xl font-bold text-blue-500">{totalHours}</p>
-              <p className="text-xs text-zinc-500 mt-1">hours</p>
+              <p className="text-3xl font-bold text-brand-text">{totalHours}</p>
+              <p className="text-xs text-brand-muted mt-1">hours</p>
             </div>
             <div className="flex-1 text-center">
-              <p className="text-3xl font-bold text-green-500">{openDays}</p>
-              <p className="text-xs text-zinc-500 mt-1">open days</p>
+              <p className="text-3xl font-bold text-emerald-500">{openDays}</p>
+              <p className="text-xs text-brand-muted mt-1">open days</p>
             </div>
             <div className="flex-1 text-center">
-              <p className="text-3xl font-bold text-red-500">{busyCount}</p>
-              <p className="text-xs text-zinc-500 mt-1">busy</p>
+              <p className="text-3xl font-bold text-rose-400">{busyCount}</p>
+              <p className="text-xs text-brand-muted mt-1">busy</p>
             </div>
           </div>
 
@@ -347,8 +347,8 @@ export default function AvailabilityCalendar({ initialData, initialYear, initial
           )}
 
           {/* Info blurb */}
-          <div className="bg-blue-50 dark:bg-blue-950/50 rounded-xl p-4">
-            <p className="text-xs text-blue-700 dark:text-blue-300 leading-relaxed">
+          <div className="bg-brand-card rounded-xl p-4">
+            <p className="text-xs text-brand-muted leading-relaxed">
               ✦ Jordan auto-fills student schedules from the hours you set here. The more specific, the better.
             </p>
           </div>

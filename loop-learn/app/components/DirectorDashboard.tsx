@@ -14,16 +14,17 @@ import {
 
 interface Props {
   username: string;
+  orgId: string;
 }
 
 // Color-coded pill for a report's delivery status
 function DeliveryBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
-    sent:        'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-    pending:     'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
-    in_progress: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-    draft:       'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400',
-    failed:      'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+    sent:        'bg-emerald-50 text-emerald-600',
+    pending:     'bg-amber-50 text-amber-700',
+    in_progress: 'bg-teal-50 text-teal-700',
+    draft:       'bg-stone-100 text-stone-500',
+    failed:      'bg-rose-50 text-rose-600',
   };
   const cls = styles[status] ?? styles.draft;
   return (
@@ -41,7 +42,7 @@ function formatDate(iso: string): string {
     + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 }
 
-export default function DirectorDashboard({ username }: Props) {
+export default function DirectorDashboard({ username, orgId }: Props) {
   const [showForm, setShowForm] = useState(false);
   const [sessions, setSessions] = useState<DirectorSession[]>([]);
   const [reports, setReports] = useState<DirectorReport[]>([]);
@@ -54,12 +55,12 @@ export default function DirectorDashboard({ username }: Props) {
     setLoadingSessions(true);
     setLoadingReports(true);
 
-    getAllUpcomingSessions().then(data => {
+    getAllUpcomingSessions(orgId).then(data => {
       setSessions(data);
       setLoadingSessions(false);
     });
 
-    getAllRecentReports().then(data => {
+    getAllRecentReports(orgId).then(data => {
       setReports(data);
       setLoadingReports(false);
     });
@@ -78,7 +79,7 @@ export default function DirectorDashboard({ username }: Props) {
         <div className="w-full max-w-lg">
           <button
             onClick={() => setShowForm(false)}
-            className="mb-8 flex items-center gap-2 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+            className="mb-8 flex items-center gap-2 text-brand-muted hover:text-brand-text transition-colors"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -86,6 +87,7 @@ export default function DirectorDashboard({ username }: Props) {
             Back to Dashboard
           </button>
           <CreateSessionForm
+            orgId={orgId}
             onSuccess={handleSessionCreated}
             onCancel={() => setShowForm(false)}
           />
@@ -100,17 +102,17 @@ export default function DirectorDashboard({ username }: Props) {
 
       {/* Greeting */}
       <div className="flex flex-col items-start gap-2">
-        <h1 className="text-4xl font-bold tracking-tight text-black dark:text-zinc-50">
+        <h1 className="text-4xl font-bold tracking-tight text-brand-text">
           Hello, {username}!
         </h1>
-        <p className="text-lg text-zinc-600 dark:text-zinc-400">
+        <p className="text-lg text-brand-muted">
           What would you like to do today?
         </p>
       </div>
 
       {/* ── Action cards ── */}
       <section>
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 mb-4">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-brand-muted mb-4">
           Quick Actions
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -118,18 +120,18 @@ export default function DirectorDashboard({ username }: Props) {
           {/* Create a session card */}
           <button
             onClick={() => setShowForm(true)}
-            className="group relative flex flex-col items-start p-8 bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm hover:shadow-md transition-all text-left"
+            className="group relative flex flex-col items-start p-8 bg-white rounded-3xl border border-brand-border shadow-sm hover:shadow-md transition-all text-left"
           >
-            <div className="w-12 h-12 bg-black dark:bg-white rounded-2xl flex items-center justify-center mb-6 text-white dark:text-black">
+            <div className="w-12 h-12 bg-brand-primary rounded-2xl flex items-center justify-center mb-6 text-white">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
               </svg>
             </div>
-            <h3 className="text-xl font-bold mb-2">Create a session</h3>
-            <p className="text-zinc-500 dark:text-zinc-400">
+            <h3 className="text-xl font-bold mb-2 text-brand-text">Create a session</h3>
+            <p className="text-brand-muted">
               Schedule a new tutoring session and assign it to a tutor.
             </p>
-            <div className="absolute bottom-8 right-8 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="absolute bottom-8 right-8 opacity-0 group-hover:opacity-100 transition-opacity text-brand-primary">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
               </svg>
@@ -141,20 +143,20 @@ export default function DirectorDashboard({ username }: Props) {
 
       {/* ── Overview panels ── */}
       <section>
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 mb-4">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-brand-muted mb-4">
           Overview
         </h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
           {/* All upcoming sessions panel */}
-          <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800 p-6">
-            <h3 className="text-base font-bold mb-4 text-zinc-900 dark:text-zinc-100">
+          <div className="bg-white rounded-3xl border border-brand-border p-6">
+            <h3 className="text-base font-bold mb-4 text-brand-text">
               Upcoming Sessions
             </h3>
             {loadingSessions ? (
-              <p className="text-sm text-zinc-400">Loading…</p>
+              <p className="text-sm text-brand-muted">Loading…</p>
             ) : sessions.length === 0 ? (
-              <p className="text-sm text-zinc-400 dark:text-zinc-600">
+              <p className="text-sm text-brand-muted">
                 No upcoming sessions scheduled.
               </p>
             ) : (
@@ -162,15 +164,15 @@ export default function DirectorDashboard({ username }: Props) {
                 {sessions.map(session => (
                   <li key={session.id} className="flex items-start justify-between gap-4">
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate">
+                      <p className="text-sm font-medium text-brand-text truncate">
                         {session.studentName ?? 'Unknown student'}
                       </p>
-                      <p className="text-xs text-zinc-400 dark:text-zinc-500">
+                      <p className="text-xs text-brand-muted">
                         {formatDate(session.scheduledStart)}
                       </p>
                     </div>
                     {session.tutorName && (
-                      <span className="text-xs text-zinc-500 dark:text-zinc-400 flex-shrink-0">
+                      <span className="text-xs text-brand-muted flex-shrink-0">
                         {session.tutorName}
                       </span>
                     )}
@@ -181,14 +183,14 @@ export default function DirectorDashboard({ username }: Props) {
           </div>
 
           {/* All recent reports panel */}
-          <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800 p-6">
-            <h3 className="text-base font-bold mb-4 text-zinc-900 dark:text-zinc-100">
+          <div className="bg-white rounded-3xl border border-brand-border p-6">
+            <h3 className="text-base font-bold mb-4 text-brand-text">
               Recent Reports
             </h3>
             {loadingReports ? (
-              <p className="text-sm text-zinc-400">Loading…</p>
+              <p className="text-sm text-brand-muted">Loading…</p>
             ) : reports.length === 0 ? (
-              <p className="text-sm text-zinc-400 dark:text-zinc-600">
+              <p className="text-sm text-brand-muted">
                 No reports submitted yet.
               </p>
             ) : (
@@ -196,11 +198,11 @@ export default function DirectorDashboard({ username }: Props) {
                 {reports.map(report => (
                   <li key={report.id} className="flex items-center justify-between gap-4">
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate">
+                      <p className="text-sm font-medium text-brand-text truncate">
                         {report.studentName ?? 'Unknown student'}
                       </p>
                       {report.sessionDate && (
-                        <p className="text-xs text-zinc-400 dark:text-zinc-500">
+                        <p className="text-xs text-brand-muted">
                           {formatDate(report.sessionDate)}
                         </p>
                       )}

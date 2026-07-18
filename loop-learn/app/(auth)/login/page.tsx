@@ -1,12 +1,15 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const inviteToken = searchParams.get('invite');
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('idle');
@@ -24,24 +27,26 @@ export default function LoginPage() {
       setStatus('error');
       setErrorMessage(error.message);
     } else {
-      router.push('/');
+      router.push(inviteToken ? `/invite/${inviteToken}` : '/organizations');
     }
   };
 
+  const signupHref = inviteToken ? `/signup?invite=${inviteToken}` : '/signup';
+
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 bg-white dark:bg-zinc-950">
+    <div className="min-h-screen flex items-center justify-center px-4 bg-brand-bg">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+          <h1 className="text-3xl font-bold tracking-tight text-brand-primary">
             Loop-Learn
           </h1>
-          <p className="mt-2 text-zinc-500 dark:text-zinc-400">Sign in to your account</p>
+          <p className="mt-2 text-brand-muted">Sign in to your account</p>
         </div>
 
-        <div className="p-8 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-md">
+        <div className="p-8 bg-white rounded-2xl border border-brand-border shadow-md">
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium mb-1 text-zinc-900 dark:text-zinc-100">
+              <label className="block text-sm font-medium mb-1 text-brand-text">
                 Email
               </label>
               <input
@@ -49,13 +54,13 @@ export default function LoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-2 rounded-lg border dark:bg-zinc-800 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
+                className="w-full p-2 rounded-lg border border-brand-border bg-white focus:outline-none focus:ring-2 focus:ring-brand-primary"
                 placeholder="you@example.com"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1 text-zinc-900 dark:text-zinc-100">
+              <label className="block text-sm font-medium mb-1 text-brand-text">
                 Password
               </label>
               <input
@@ -63,13 +68,13 @@ export default function LoginPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full p-2 rounded-lg border dark:bg-zinc-800 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
+                className="w-full p-2 rounded-lg border border-brand-border bg-white focus:outline-none focus:ring-2 focus:ring-brand-primary"
                 placeholder="••••••••"
               />
             </div>
 
             {status === 'error' && (
-              <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-3 rounded-xl border border-red-100 dark:border-red-800/50">
+              <p className="text-sm text-rose-600 bg-rose-50 p-3 rounded-xl border border-rose-200">
                 {errorMessage}
               </p>
             )}
@@ -77,7 +82,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={status === 'loading'}
-              className="w-full py-2.5 bg-black dark:bg-white text-white dark:text-black font-bold rounded-xl hover:opacity-90 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full py-2.5 bg-brand-primary text-white font-bold rounded-xl hover:opacity-90 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {status === 'loading' ? (
                 <>
@@ -94,13 +99,21 @@ export default function LoginPage() {
           </form>
         </div>
 
-        <p className="text-center mt-6 text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="text-center mt-6 text-sm text-brand-muted">
           Don&apos;t have an account?{' '}
-          <Link href="/signup" className="font-medium text-zinc-900 dark:text-zinc-100 hover:underline">
+          <Link href={signupHref} className="font-medium text-brand-primary hover:underline">
             Sign up
           </Link>
         </p>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   );
 }

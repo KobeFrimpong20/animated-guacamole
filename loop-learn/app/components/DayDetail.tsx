@@ -31,11 +31,11 @@ export default function DayDetail({ dayData, onToggleHour, onClear, onMarkBusy }
     : 'No hours set';
 
   return (
-    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl p-4">
-      <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-0.5">
+    <div className="bg-white border border-brand-border rounded-xl p-4">
+      <p className="text-xs font-semibold text-brand-muted uppercase tracking-wide mb-0.5">
         {displayDate}
       </p>
-      <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-4">{statusText}</p>
+      <p className="text-sm text-brand-muted mb-4">{statusText}</p>
 
       <div className="flex flex-wrap gap-2 mb-4">
         {HOURS.map(hour => {
@@ -47,8 +47,8 @@ export default function DayDetail({ dayData, onToggleHour, onClear, onMarkBusy }
               disabled={isBusy}
               className={`px-3 py-1 rounded-full text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
                 selected
-                  ? 'bg-blue-500 text-white'
-                  : 'border border-zinc-300 dark:border-zinc-600 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800'
+                  ? 'bg-brand-primary text-white'
+                  : 'border border-brand-border text-brand-muted hover:bg-brand-card'
               }`}
             >
               {formatHour(hour)}
@@ -60,7 +60,7 @@ export default function DayDetail({ dayData, onToggleHour, onClear, onMarkBusy }
       <div className="flex gap-2">
         <button
           onClick={onClear}
-          className="px-4 py-1.5 text-sm font-medium text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+          className="px-4 py-1.5 text-sm font-medium text-brand-muted border border-brand-border rounded-lg hover:bg-brand-card transition-colors"
         >
           Clear
         </button>
@@ -68,8 +68,8 @@ export default function DayDetail({ dayData, onToggleHour, onClear, onMarkBusy }
           onClick={onMarkBusy}
           className={`px-4 py-1.5 text-sm font-medium rounded-lg border transition-colors ${
             isBusy
-              ? 'bg-red-500 text-white border-red-500'
-              : 'text-red-500 border-red-300 hover:bg-red-50 dark:hover:bg-red-950'
+              ? 'bg-rose-500 text-white border-rose-500'
+              : 'text-rose-500 border-rose-300 hover:bg-rose-50'
           }`}
         >
           Mark busy

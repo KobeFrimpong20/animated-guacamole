@@ -1,10 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 
-export default function SignupPage() {
+function SignupForm() {
+  const searchParams = useSearchParams();
+  const inviteToken = searchParams.get('invite');
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -34,24 +38,26 @@ export default function SignupPage() {
     }
   };
 
+  const loginHref = inviteToken ? `/login?invite=${inviteToken}` : '/login';
+
   if (status === 'success') {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4 bg-white dark:bg-zinc-950">
+      <div className="min-h-screen flex items-center justify-center px-4 bg-brand-bg">
         <div className="w-full max-w-sm text-center">
-          <div className="mb-6 inline-flex items-center justify-center w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full text-green-600 dark:text-green-400">
+          <div className="mb-6 inline-flex items-center justify-center w-16 h-16 bg-emerald-50 rounded-full text-emerald-600">
             <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold mb-2 text-zinc-900 dark:text-zinc-50">Check your email</h2>
-          <p className="text-zinc-500 dark:text-zinc-400 mb-6">
+          <h2 className="text-2xl font-bold mb-2 text-brand-text">Check your email</h2>
+          <p className="text-brand-muted mb-6">
             We sent a confirmation link to{' '}
-            <span className="font-medium text-zinc-900 dark:text-zinc-100">{email}</span>.
-            Click it to activate your account.
+            <span className="font-medium text-brand-text">{email}</span>.
+            Click it to activate your account, then sign in below.
           </p>
           <Link
-            href="/login"
-            className="inline-block px-6 py-2.5 bg-black dark:bg-white text-white dark:text-black font-bold rounded-xl hover:opacity-90 transition-all"
+            href={loginHref}
+            className="inline-block px-6 py-2.5 bg-brand-primary text-white font-bold rounded-xl hover:opacity-90 transition-all"
           >
             Back to sign in
           </Link>
@@ -61,19 +67,19 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 bg-white dark:bg-zinc-950">
+    <div className="min-h-screen flex items-center justify-center px-4 bg-brand-bg">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+          <h1 className="text-3xl font-bold tracking-tight text-brand-primary">
             Loop-Learn
           </h1>
-          <p className="mt-2 text-zinc-500 dark:text-zinc-400">Create your account</p>
+          <p className="mt-2 text-brand-muted">Create your account</p>
         </div>
 
-        <div className="p-8 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-md">
+        <div className="p-8 bg-white rounded-2xl border border-brand-border shadow-md">
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium mb-1 text-zinc-900 dark:text-zinc-100">
+              <label className="block text-sm font-medium mb-1 text-brand-text">
                 Email
               </label>
               <input
@@ -81,13 +87,13 @@ export default function SignupPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-2 rounded-lg border dark:bg-zinc-800 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
+                className="w-full p-2 rounded-lg border border-brand-border bg-white focus:outline-none focus:ring-2 focus:ring-brand-primary"
                 placeholder="you@example.com"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1 text-zinc-900 dark:text-zinc-100">
+              <label className="block text-sm font-medium mb-1 text-brand-text">
                 Password
               </label>
               <input
@@ -95,13 +101,13 @@ export default function SignupPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full p-2 rounded-lg border dark:bg-zinc-800 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
+                className="w-full p-2 rounded-lg border border-brand-border bg-white focus:outline-none focus:ring-2 focus:ring-brand-primary"
                 placeholder="••••••••"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1 text-zinc-900 dark:text-zinc-100">
+              <label className="block text-sm font-medium mb-1 text-brand-text">
                 Confirm password
               </label>
               <input
@@ -109,13 +115,13 @@ export default function SignupPage() {
                 required
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full p-2 rounded-lg border dark:bg-zinc-800 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
+                className="w-full p-2 rounded-lg border border-brand-border bg-white focus:outline-none focus:ring-2 focus:ring-brand-primary"
                 placeholder="••••••••"
               />
             </div>
 
             {status === 'error' && (
-              <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-3 rounded-xl border border-red-100 dark:border-red-800/50">
+              <p className="text-sm text-rose-600 bg-rose-50 p-3 rounded-xl border border-rose-200">
                 {errorMessage}
               </p>
             )}
@@ -123,7 +129,7 @@ export default function SignupPage() {
             <button
               type="submit"
               disabled={status === 'loading'}
-              className="w-full py-2.5 bg-black dark:bg-white text-white dark:text-black font-bold rounded-xl hover:opacity-90 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full py-2.5 bg-brand-primary text-white font-bold rounded-xl hover:opacity-90 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {status === 'loading' ? (
                 <>
@@ -140,13 +146,21 @@ export default function SignupPage() {
           </form>
         </div>
 
-        <p className="text-center mt-6 text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="text-center mt-6 text-sm text-brand-muted">
           Already have an account?{' '}
-          <Link href="/login" className="font-medium text-zinc-900 dark:text-zinc-100 hover:underline">
+          <Link href={loginHref} className="font-medium text-brand-primary hover:underline">
             Sign in
           </Link>
         </p>
       </div>
     </div>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense>
+      <SignupForm />
+    </Suspense>
   );
 }
